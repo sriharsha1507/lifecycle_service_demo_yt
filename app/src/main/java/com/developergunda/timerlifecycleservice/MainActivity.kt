@@ -1,8 +1,8 @@
 package com.developergunda.timerlifecycleservice
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import com.developergunda.timerlifecycleservice.service.TimerService
 import com.developergunda.timerlifecycleservice.util.TimerUtil

@@ -3,8 +3,6 @@ package com.developergunda.timerlifecycleservice.service
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.NotificationManager.IMPORTANCE_LOW
-import android.app.PendingIntent
-import android.app.PendingIntent.FLAG_UPDATE_CURRENT
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -15,12 +13,15 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.developergunda.timerlifecycleservice.*
 import com.developergunda.timerlifecycleservice.util.TimerUtil
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class TimerService : LifecycleService() {
     companion object {
         val isTimerRunning = MutableLiveData<Boolean>()
@@ -30,7 +31,11 @@ class TimerService : LifecycleService() {
     private val timerInSeconds = MutableLiveData<Long>()
     private var isServiceStopped = false
 
-    private lateinit var notificationBuilder: NotificationCompat.Builder
+    @Inject
+    lateinit var notificationBuilder: NotificationCompat.Builder
+
+    @Inject
+    lateinit var notificationManager: NotificationManager
 
     //Timer properties
     private var lapTime = 0L
@@ -40,14 +45,6 @@ class TimerService : LifecycleService() {
     override fun onCreate() {
         super.onCreate()
         initValues()
-
-        notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setAutoCancel(false)
-            .setOngoing(true)
-            .setSmallIcon(R.drawable.twotone_alarm_black_48)
-            .setContentTitle("Timer Lifecycle Service Demo")
-            .setContentText("00:00:00")
-            .setContentIntent(getMainActivityPendingIntent())
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -76,11 +73,8 @@ class TimerService : LifecycleService() {
         isTimerRunning.postValue(true)
         startTimer()
 
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(notificationManager)
+            createNotificationChannel()
         }
 
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
@@ -106,7 +100,7 @@ class TimerService : LifecycleService() {
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannel(notificationManager: NotificationManager) {
+    private fun createNotificationChannel() {
         val channel =
             NotificationChannel(
                 NOTIFICATION_CHANNEL_ID,
@@ -117,20 +111,10 @@ class TimerService : LifecycleService() {
         notificationManager.createNotificationChannel(channel)
     }
 
-    private fun getMainActivityPendingIntent() =
-        PendingIntent.getActivity(
-            this,
-            420,
-            Intent(this, MainActivity::class.java).apply {
-                this.flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
-            },
-            FLAG_UPDATE_CURRENT
-        )
-
     private fun startTimer() {
         timeStarted = System.currentTimeMillis()
         CoroutineScope(Dispatchers.Main).launch {
-            while (isTimerRunning.value!!) {
+            while (isTimerRunning.value!! && !isServiceStopped) {
                 lapTime = System.currentTimeMillis() - timeStarted
                 timerInMillis.postValue(lapTime)
                 if (timerInMillis.value!! > lastSecondTimeStamp + 1000L) {
