@@ -13,11 +13,13 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ServiceComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.android.scopes.ServiceScoped
 
 @Module
 @InstallIn(ServiceComponent::class)
 object ServiceModule {
 
+    @ServiceScoped
     @Provides
     fun provideMainActivityPendingIntent(
         @ApplicationContext context: Context
@@ -31,7 +33,7 @@ object ServiceModule {
             PendingIntent.FLAG_UPDATE_CURRENT
         )
 
-
+    @ServiceScoped
     @Provides
     fun provideNotificationBuilder(
         @ApplicationContext context: Context,
@@ -44,6 +46,7 @@ object ServiceModule {
         .setContentText("00:00:00")
         .setContentIntent(pendingIntent)
 
+    @ServiceScoped
     @Provides
     fun provideNotificationManager(@ApplicationContext context: Context) =
         context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
