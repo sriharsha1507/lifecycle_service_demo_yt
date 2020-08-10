@@ -12,6 +12,7 @@ import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Observer
 import com.developergunda.timerlifecycleservice.*
+import com.developergunda.timerlifecycleservice.model.TimerEvent
 import com.developergunda.timerlifecycleservice.util.TimerUtil
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
@@ -24,7 +25,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class TimerService : LifecycleService() {
     companion object {
-        val isTimerRunning = MutableLiveData<Boolean>()
+        val timerEvent = MutableLiveData<TimerEvent>()
         val timerInMillis = MutableLiveData<Long>()
     }
 
@@ -64,13 +65,13 @@ class TimerService : LifecycleService() {
     }
 
     private fun initValues() {
-        isTimerRunning.postValue(false)
+        timerEvent.postValue(TimerEvent.END)
         timerInMillis.postValue(0L)
         timerInSeconds.postValue(0L)
     }
 
     private fun startForegroundService() {
-        isTimerRunning.postValue(true)
+        timerEvent.postValue(TimerEvent.START)
         startTimer()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -114,7 +115,7 @@ class TimerService : LifecycleService() {
     private fun startTimer() {
         timeStarted = System.currentTimeMillis()
         CoroutineScope(Dispatchers.Main).launch {
-            while (isTimerRunning.value!! && !isServiceStopped) {
+            while (timerEvent.value!! == TimerEvent.START && !isServiceStopped) {
                 lapTime = System.currentTimeMillis() - timeStarted
                 timerInMillis.postValue(lapTime)
                 if (timerInMillis.value!! > lastSecondTimeStamp + 1000L) {

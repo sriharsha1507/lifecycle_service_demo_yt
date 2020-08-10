@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
+import com.developergunda.timerlifecycleservice.model.TimerEvent
 import com.developergunda.timerlifecycleservice.service.TimerService
 import com.developergunda.timerlifecycleservice.util.TimerUtil
 import kotlinx.android.synthetic.main.activity_main.*
@@ -21,7 +22,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setObservers() {
-        TimerService.isTimerRunning.observe(this, Observer {
+        TimerService.timerEvent.observe(this, Observer {
             updateUi(it)
         })
 
@@ -30,12 +31,16 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun updateUi(isTimerRunning: Boolean) {
-        this.isTimerRunning = isTimerRunning
-        if (isTimerRunning) {
-            fab.setImageResource(R.drawable.twotone_stop_black_24)
-        } else {
-            fab.setImageResource(R.drawable.twotone_alarm_black_24)
+    private fun updateUi(event: TimerEvent) {
+        when (event) {
+            is TimerEvent.START -> {
+                isTimerRunning = true
+                fab.setImageResource(R.drawable.twotone_stop_black_24)
+            }
+            is TimerEvent.END -> {
+                isTimerRunning = false
+                fab.setImageResource(R.drawable.twotone_alarm_black_24)
+            }
         }
     }
 
