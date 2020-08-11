@@ -29,7 +29,6 @@ class TimerService : LifecycleService() {
         val timerInMillis = MutableLiveData<Long>()
     }
 
-    private val timerInSeconds = MutableLiveData<Long>()
     private var isServiceStopped = false
 
     @Inject
@@ -41,7 +40,6 @@ class TimerService : LifecycleService() {
     //Timer properties
     private var lapTime = 0L
     private var timeStarted = 0L
-    private var lastSecondTimeStamp = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -67,7 +65,6 @@ class TimerService : LifecycleService() {
     private fun initValues() {
         timerEvent.postValue(TimerEvent.END)
         timerInMillis.postValue(0L)
-        timerInSeconds.postValue(0L)
     }
 
     private fun startForegroundService() {
@@ -118,10 +115,6 @@ class TimerService : LifecycleService() {
             while (timerEvent.value!! == TimerEvent.START && !isServiceStopped) {
                 lapTime = System.currentTimeMillis() - timeStarted
                 timerInMillis.postValue(lapTime)
-                if (timerInMillis.value!! > lastSecondTimeStamp + 1000L) {
-                    timerInSeconds.postValue(timerInMillis.value!! + 1)
-                    lastSecondTimeStamp += 1000L
-                }
                 delay(50L)
             }
         }
