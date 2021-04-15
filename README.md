@@ -3,6 +3,8 @@
   <a href="https://badges.frapsoft.com/os/v2/open-source.svg?v=103"><img src="https://badges.frapsoft.com/os/v2/open-source.svg?v=103"></a>
 </p>
 
+![Thumbnail](demo/demo.jpg)
+
 # LifecycleService Demo 
 Demo to show the usage of lifecycle service. Using stop watch timer as an example. As the timer gets started, there will be a foreground service which shows a notification with a current timer. I have used singleton pattern approach for service in order to observe live data values which is inside the service. 
 
